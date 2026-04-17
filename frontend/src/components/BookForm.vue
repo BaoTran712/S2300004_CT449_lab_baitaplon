@@ -3,6 +3,8 @@ import { ref, onMounted, watch } from 'vue';
 import { useForm, useField } from "vee-validate";
 import { bookSchema } from '../validations/book.validation';
 import PublisherService from '../services/publisher.service';
+import UploadService from '../services/upload.service';
+import { push } from 'notivue';
 
 const props = defineProps({
   initialData: {
@@ -23,6 +25,7 @@ const emit = defineEmits(["submit", "cancel"]);
 
 const publisherService = new PublisherService();
 const publishers = ref([]);
+const isUploading = ref(false);
 
 const { handleSubmit, resetForm } = useForm({
   validationSchema: bookSchema,
@@ -60,6 +63,23 @@ const fetchPublishers = async () => {
     publishers.value = await publisherService.getAllPublishers();
   } catch (error) {
     console.error("Lỗi khi tải NXB:", error);
+  }
+};
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  isUploading.value = true;
+  try {
+    const response = await UploadService.uploadImage(file);
+    image.value = response.url;
+    push.success(response.message || "Tải ảnh lên thành công");
+  } catch (error) {
+    console.error(error);
+    push.error(error.response?.data?.message || "Tải ảnh thất bại");
+  } finally {
+    isUploading.value = false;
   }
 };
 
@@ -140,12 +160,34 @@ onMounted(fetchPublishers);
       </div>
     </div>
 
-    <div class="form-control">
-      <label class="label font-bold text-xs uppercase text-gray-400" for="image">URL Ảnh bìa</label>
-      <input v-model="image" type="text" class="input input-bordered" id="image" placeholder="https://..." />
-      <span class="text-xs text-red-500 mt-1">{{ imageError }}</span>
-      <div v-if="image" class="mt-2 w-20 h-28 rounded shadow-sm overflow-hidden border">
-        <img :src="image" class="w-full h-full object-cover" alt="Preview">
+    <div class="form-control mb-2">
+      <label class="label font-bold text-xs uppercase text-gray-400" for="image">Ảnh Bìa Sách</label>
+      
+      <div class="flex flex-col md:flex-row gap-4 items-start md:items-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+        <!-- Preview image block -->
+        <div class="w-24 h-32 rounded shadow-sm overflow-hidden bg-gray-200 shrink-0 flex items-center justify-center border border-gray-300">
+            <img v-if="image" :src="image" class="w-full h-full object-cover" alt="Preview">
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+        </div>
+        
+        <!-- Input section -->
+        <div class="flex-grow space-y-3 w-full">
+            <div>
+              <p class="text-xs font-bold text-neutral mb-1">Cách 1: Chọn tải file từ máy tính</p>
+              <div class="flex items-center gap-2">
+                  <input type="file" accept="image/*" @change="handleFileUpload" :disabled="isUploading" class="file-input file-input-bordered file-input-sm w-full" />
+                  <span v-if="isUploading" class="loading loading-spinner text-primary"></span>
+              </div>
+            </div>
+
+            <div class="divider my-0">HOẶC</div>
+
+            <div>
+              <p class="text-xs font-bold text-neutral mb-1">Cách 2: Dán đường dẫn URL trực tiếp</p>
+              <input v-model="image" type="text" class="input input-bordered input-sm w-full" id="image" placeholder="https://..." />
+            </div>
+            <span class="text-xs text-red-500">{{ imageError }}</span>
+        </div>
       </div>
     </div>
 

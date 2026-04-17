@@ -146,18 +146,12 @@ onMounted(fetchBookData);
               </div>
             </div>
 
-            <div class="flex items-center gap-6">
-               <div class="rating rating-md items-center gap-2">
-                  <div class="flex">
-                     <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" 
-                          :class="i <= Math.round(Number(averageRating)) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 fill-gray-200'" 
-                          class="h-6 w-6" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                     </svg>
-                  </div>
-                  <span class="font-black text-2xl text-base-content ml-2">{{ averageRating }}</span>
-                  <span class="text-gray-400 text-sm">/ 5 ({{ reviews.length }} đánh giá)</span>
+            <div class="flex items-center gap-4">
+               <div class="flex items-center gap-1">
+                  <span v-for="i in 5" :key="i" class="text-2xl cursor-default" :style="{ color: i <= Math.round(Number(averageRating)) ? '#facc15' : '#d1d5db' }">&#9733;</span>
                </div>
+               <span class="font-black text-2xl text-base-content">{{ averageRating }}</span>
+               <span class="text-gray-400 text-sm">/ 5 ({{ reviews.length }} đánh giá)</span>
             </div>
 
             <div class="divider"></div>
@@ -267,12 +261,8 @@ onMounted(fetchBookData);
                       </div>
                       <span class="font-bold">{{ review.username || "Người dùng ẩn" }}</span>
                    </div>
-                   <div class="flex">
-                      <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" 
-                           :class="i <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-100'" 
-                           class="h-4 w-4" viewBox="0 0 20 20">
-                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                      </svg>
+                   <div class="flex items-center gap-0.5">
+                      <span v-for="i in 5" :key="i" class="text-sm" :style="{ color: i <= review.rating ? '#facc15' : '#d1d5db' }">&#9733;</span>
                    </div>
                  </div>
                  <p class="text-gray-700 leading-relaxed">{{ review.comment }}</p>

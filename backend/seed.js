@@ -46,14 +46,16 @@ const AUTHORS = [
 ];
 
 const BOOK_COVERS = [
-    'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1589998059171-988d887df646?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800',
+    'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=800',
+    'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800',
+    'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800',
+    'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=800',
+    'https://images.unsplash.com/photo-1524578959404-518218151528?q=80&w=800',
+    'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800',
+    'https://images.unsplash.com/photo-1511108690759-009324a5033d?q=80&w=800',
+    'https://images.unsplash.com/photo-1588580000645-4562a6d2c839?q=80&w=800',
+    'https://images.unsplash.com/photo-1629851658428-a25e2e8e97dd?q=80&w=800',
+    'https://images.unsplash.com/photo-1604866830893-c13cafa07b92?q=80&w=800'
 ];
 
 const DESCRIPTIONS = [

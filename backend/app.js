@@ -9,6 +9,7 @@ import bookRouter from "./src/routes/book.route.js";
 import borrowRouter from "./src/routes/borrow.route.js";
 import reviewRouter from "./src/routes/review.route.js";
 import contactRouter from "./src/routes/contact.route.js";
+import uploadRouter from "./src/routes/upload.route.js";
 
 const app = express();
 app.use(cors());
@@ -25,6 +26,10 @@ app.use("/api/book", bookRouter);
 app.use("/api/borrow", borrowRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/contact", contactRouter);
+app.use("/api/upload", uploadRouter);
+
+// Mở cửa cho Frontend truy cập đọc trực tiếp file ảnh local
+app.use('/public', express.static(process.cwd() + '/public'));
 
 app.use((req, res, next) => {
     return next(new ApiError(404, "Resource not found"));

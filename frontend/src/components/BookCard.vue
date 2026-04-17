@@ -3,6 +3,7 @@ import { useRouter } from "vue-router";
 import { ref, computed, onMounted } from 'vue';
 import PublisherService from "../services/publisher.service";
 import BookService from "../services/book.service";
+import ReviewService from "../services/review.service";
 import { push } from "notivue";
 import { onUnmounted } from 'vue';
 
@@ -10,6 +11,7 @@ const role = computed(() => localStorage.getItem("role"));
 const router = useRouter();
 const publisherService = new PublisherService();
 const bookService = new BookService();
+const reviewService = new ReviewService();
 
 const props = defineProps({
   book: {
@@ -29,6 +31,23 @@ const props = defineProps({
 
 const title = ref("");
 const loading = ref(true);
+
+const reviews = ref([]);
+const averageRating = computed(() => {
+  if (reviews.value.length === 0) return 0;
+  const sum = reviews.value.reduce((acc, r) => acc + r.rating, 0);
+  return (sum / reviews.value.length).toFixed(1);
+});
+
+const fetchReviews = async () => {
+  try {
+    if (props.book?._id) {
+       reviews.value = await reviewService.getReviewsByBookId(props.book._id);
+    }
+  } catch (e) {
+    // Ignore error for non-critical ratings load
+  }
+};
 
 const isFlashSaleActive = ref(false);
 const timeLeft = ref("");
@@ -61,6 +80,7 @@ const updateFlashSale = () => {
 onMounted(() => {
   updateFlashSale();
   timerInterval = setInterval(updateFlashSale, 1000);
+  fetchReviews();
 });
 
 onUnmounted(() => {
@@ -110,12 +130,19 @@ const goToDetail = (book_id) => {
     <div class="p-6 flex flex-col flex-grow bg-white">
       <template v-if=" role !== 'staff' ">
         <div class="mb-4">
-          <h3 class="text-xl font-black text-gray-900 leading-tight mb-2 hover:text-primary transition-colors cursor-pointer capitalize line-clamp-2 min-h-[3rem]">
+          <h3 class="text-xl font-black text-gray-900 leading-tight mb-2 hover:text-primary transition-colors cursor-pointer capitalize line-clamp-2 min-h-[3rem]" @click="goToDetail(book._id)">
             {{ book.title }}
           </h3>
-          <p v-if="showInfo" class="text-sm text-gray-500 italic">
+          <p v-if="showInfo" class="text-sm text-gray-500 italic mb-2">
             {{ book.author }} <span class="mx-1">|</span> {{ book.published_year }}
           </p>
+          <div v-if="showInfo" class="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 drop-shadow-sm text-yellow-500 fill-yellow-500" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+             </svg>
+             <span class="text-xs font-bold text-gray-800">{{ averageRating > 0 ? averageRating : 'Chưa có' }}</span>
+             <span v-if="averageRating > 0" class="text-[10px] text-gray-400 font-medium">({{ reviews.length }})</span>
+          </div>
         </div>
 
         <div class="mt-auto flex items-center justify-between">
@@ -188,6 +215,13 @@ const goToDetail = (book_id) => {
           </div>
           <h3 class="text-2xl font-black text-neutral line-clamp-1 group-hover:text-primary transition-colors hover:cursor-pointer" @click="goToDetail(book._id)">{{ book.title }}</h3>
           <p class="text-gray-500 font-medium italic mt-1">{{ book.author }}</p>
+          <div class="flex items-center gap-1.5 mt-2 opacity-90 hover:opacity-100 transition-opacity">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 drop-shadow-sm text-yellow-500 fill-yellow-500" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+             </svg>
+             <span class="font-bold text-gray-800">{{ averageRating > 0 ? averageRating : 'Chưa có đánh giá' }}</span>
+             <span v-if="averageRating > 0" class="text-xs text-gray-500 font-medium ml-1">({{ reviews.length }} nhận xét)</span>
+          </div>
           <p class="text-sm text-gray-400 mt-2 line-clamp-2">{{ book.description }}</p>
        </div>
 
