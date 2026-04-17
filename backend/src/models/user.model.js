@@ -53,7 +53,10 @@ const userSchema = mongoose.Schema({
     fines: {
         type: Number,
         default: 0,
-    }
+    },
+    rewards: [{
+        type: String
+    }]
 },
     {
         timestamps: true,

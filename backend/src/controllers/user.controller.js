@@ -152,6 +152,60 @@ export async function payFines(req, res, next) {
     }
 }
 
+export async function spinWheel(req, res, next) {
+    try {
+        const user = await userService.findById(req.params.id);
+        if (!user) {
+            return next(new ApiError(404, "User not found"));
+        }
+
+        if (user.points < 30) {
+            return next(new ApiError(400, "Bạn không đủ điểm để thực hiện lượt xoay này (Cần 30 điểm)"));
+        }
+
+        const prizes = [
+            "Móc khóa Ebookshelf", 
+            "Thẻ kẹp sách (Bookmark)", 
+            "Bút dạ quang", 
+            "Sổ tay kiến thức", 
+            "Huy hiệu độc bản",
+            "Chúc bạn may mắn lần sau"
+        ];
+        
+        const randomIndex = Math.floor(Math.random() * prizes.length);
+        const reward = prizes[randomIndex];
+
+        // Trừ điểm và thêm quà (nếu không phải là ô hụt)
+        const updateData = { points: user.points - 30 };
+        if (reward !== "Chúc bạn may mắn lần sau") {
+            updateData.$push = { rewards: reward };
+            // Note: userService.update might need to handle $push or I should do it manually if it doesn't support $set only. 
+            // My recent view of user.service.js shows it uses $set. 
+            // I'll update it to handle the push properly if needed or just do a manual update here with the model if the service is restricted.
+        }
+
+        // To keep it simple with existing service which use $set:
+        const currentRewards = [...user.rewards];
+        if (reward !== "Chúc bạn may mắn lần sau") {
+            currentRewards.push(reward);
+        }
+        
+        await userService.update(user._id, { 
+            points: user.points - 30,
+            rewards: currentRewards
+        });
+
+        return res.json({ 
+            message: "Spin completed", 
+            reward,
+            pointsLeft: user.points - 30 
+        });
+    } catch (error) {
+        console.log(error);
+        return next(new ApiError(500, "Lỗi hệ thống khi quay thưởng"));
+    }
+}
+
 export default {
-    create, findAll, findOne, update, deleteOne, deleteAll, login, payFines
+    create, findAll, findOne, update, deleteOne, deleteAll, login, payFines, spinWheel
 };

@@ -46,6 +46,10 @@ class UserService {
   async payFines(id) {
     return (await this.api.post(`/${id}/pay-fines`)).data;
   }
+
+  async spinWheel(id) {
+    return (await this.api.post(`/${id}/spin`)).data;
+  }
 }
 
 export default UserService;

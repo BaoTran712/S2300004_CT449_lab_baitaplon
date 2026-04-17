@@ -18,5 +18,6 @@ router.route("/:id")
     .delete(auth, UserController.deleteOne);
 
 router.post("/:id/pay-fines", auth, UserController.payFines);
+router.post("/:id/spin", auth, UserController.spinWheel);
 
 export default router;
