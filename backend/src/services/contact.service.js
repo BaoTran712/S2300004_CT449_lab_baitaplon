@@ -14,8 +14,14 @@ class ContactService {
         return await Contact.findByIdAndDelete(id);
     }
 
-    async updateStatus(id, status) {
-        return await Contact.findByIdAndUpdate(id, { status }, { new: true });
+    async updateStatus(id, data) {
+        const updateData = { status: data.status };
+        if (data.response) {
+            updateData.response = data.response;
+            updateData.respondedAt = Date.now();
+            updateData.status = 'responded';
+        }
+        return await Contact.findByIdAndUpdate(id, updateData, { new: true });
     }
 }
 

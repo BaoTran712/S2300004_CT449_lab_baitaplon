@@ -10,7 +10,11 @@ router.route("/")
 router.route("/book/:bookId")
     .get(reviewController.findByBookId);
 
+router.route("/user/:userId")
+    .get(reviewController.findByUserId);
+
 router.route("/:id")
-    .delete(reviewController.deleteOne);
+    .delete(reviewController.deleteOne)
+    .patch(reviewController.updateReply);
 
 export default router;

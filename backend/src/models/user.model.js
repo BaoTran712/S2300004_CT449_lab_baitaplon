@@ -56,7 +56,11 @@ const userSchema = mongoose.Schema({
     },
     rewards: [{
         type: String
-    }]
+    }],
+    suspended_until: {
+        type: Date,
+        default: null,
+    }
 },
     {
         timestamps: true,

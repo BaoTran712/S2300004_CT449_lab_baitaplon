@@ -5,8 +5,8 @@ class BorrowService {
     this.api = ApiClient(baseUrl);
   }
 
-  async getAllBorrows() {
-    return (await this.api.get("/")).data;
+  async getAllBorrows(params = {}) {
+    return (await this.api.get("/", { params })).data;
   }
 
   async getBorrowById(id) {

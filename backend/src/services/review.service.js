@@ -21,6 +21,10 @@ class ReviewService {
         return await Review.find({ book_id }).sort({ createdAt: -1 });
     }
 
+    async findByUserId(user_id) {
+        return await Review.find({ user_id }).sort({ createdAt: -1 }).populate('book_id', 'title');
+    }
+
     async findAll() {
         return await Review.find().sort({ createdAt: -1 }).populate('book_id', 'title');
     }
@@ -31,6 +35,14 @@ class ReviewService {
     
     async deleteAllByBookId(book_id) {
         return await Review.deleteMany({ book_id });
+    }
+
+    async updateReply(id, reply) {
+        return await Review.findByIdAndUpdate(
+            id, 
+            { reply, repliedAt: Date.now() }, 
+            { new: true }
+        );
     }
 }
 

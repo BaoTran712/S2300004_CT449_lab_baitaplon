@@ -6,16 +6,27 @@ const borrowService = new BorrowService();
 const userService = new UserService();
 
 export async function create(req, res, next) {
-    if (!req.body?.user_id || !req.body?.book_id || !req.body?.return_date) {
-        return next(new ApiError(400, "User, book information or return date is missing"));
+    if (!req.body?.user_id || !req.body?.book_id) {
+        return next(new ApiError(400, "User or book information is missing"));
     }
 
     const user = await userService.findById(req.body.user_id);
     if (!user) {
         return next(new ApiError(404, "User not found"));
     }
-    if (user.fines > 0) {
-        return next(new ApiError(403, "Người dùng chưa đóng nợ phạt phí trả trễ. Vui lòng thanh toán trước khi mượn tiếp."));
+    
+    if (user.suspended_until && new Date(user.suspended_until) > new Date()) {
+        return next(new ApiError(403, "Tài khoản đang bị tạm khóa mượn sách do có vi phạm trả trễ gần đây."));
+    }
+
+    const overdues = await borrowService.find({
+        user_id: req.body.user_id,
+        status: "borrowing",
+        return_date: { $lt: new Date() }
+    });
+
+    if (overdues.length > 0) {
+        return next(new ApiError(403, "Bạn đang có sách quá hạn chưa gia hạn hoặc trả lại. Không thể mượn thêm sách."));
     }
 
     const existingBorrow = await borrowService.find({
@@ -33,15 +44,16 @@ export async function create(req, res, next) {
         }
     });
 
-    if (existingBorrow.length >= 3) {
-        return next(new ApiError(422, "Borrowing record for each book is limited to 3"));
+    if (existingBorrow.length >= 2) {
+        return next(new ApiError(422, "Borrowing record for each book is limited to 2"));
     }
 
-    if (totalBorrow.length >= 10) {
-        return next(new ApiError(409, "Borrowing record is limited to 10"));
+    if (totalBorrow.length >= 5) {
+        return next(new ApiError(409, "Bạn chỉ được mượn tối đa 5 cuốn sách (bao gồm cả chờ duyệt) cùng một thời điểm."));
     }
 
     try {
+        req.body.return_date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         const document = await borrowService.create(req.body);
         return res.status(201).json({ message: "Book borrowing record created successfully", document });
     } catch (error) {
@@ -52,7 +64,11 @@ export async function create(req, res, next) {
 
 export async function findAll(req, res, next) {
     try {
-        const documents = await borrowService.find({});
+        const filter = {};
+        if (req.query.user_id) {
+            filter.user_id = req.query.user_id;
+        }
+        const documents = await borrowService.find(filter);
         return res.json(documents);
     } catch (error) {
         console.log(error);
@@ -92,7 +108,7 @@ export async function update(req, res, next) {
 
         const document = await borrowService.update(req.params.id, req.body);
 
-        // Tính điểm hoặc nợ phạt khi trả sách
+        // Khâu xử lý thao tác Đã Trả (Returned)
         if (isMarkingAsReturned) {
             const expectedReturnDate = new Date(existingBorrow.return_date);
             const actualReturnDate = new Date();
@@ -101,13 +117,33 @@ export async function update(req, res, next) {
             const user = await userService.findById(existingBorrow.user_id._id || existingBorrow.user_id);
             if (user) {
                 if (actualReturnDate > expectedReturnDate) {
-                    // Cập nhật phạt
-                    await userService.update(user._id, { fines: (user.fines || 0) + 50000 });
+                    // Cập nhật phạt trừ 1 điểm, tối thiểu là 0.
+                    const newPoints = Math.max(0, (user.points || 0) - 1);
+                    // Đình chỉ mượn sách 2 ngày từ giờ đáo hạn đã qua: return_date + 2 days (48 giờ)
+                    const suspendedUntil = new Date(expectedReturnDate.getTime() + 2 * 24 * 60 * 60 * 1000);
+                    
+                    await userService.update(user._id, { 
+                        points: newPoints,
+                        suspended_until: suspendedUntil 
+                    });
                 } else {
-                    // Cập nhật điểm
+                    // Cập nhật điểm +5 nếu đúng hẹn
                     await userService.update(user._id, { points: (user.points || 0) + 5 });
                 }
             }
+        }
+
+        // Khâu xử lý thao tác Gia Hạn (Renew)
+        if (req.body.action === "renew") {
+            const expectedReturnDate = new Date(existingBorrow.return_date);
+            expectedReturnDate.setHours(23, 59, 59, 999);
+            
+            if (new Date() > expectedReturnDate) {
+                return next(new ApiError(400, "Sách này đã hết hạn, không thể gia hạn. Vui lòng trả sách."));
+            }
+            
+            const newReturnDate = new Date(expectedReturnDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+            await borrowService.update(req.params.id, { return_date: newReturnDate });
         }
 
         return res.json({ message: "Book borrowing record updated successfully", document });

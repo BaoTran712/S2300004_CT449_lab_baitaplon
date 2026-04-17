@@ -5,6 +5,8 @@ import InputSearch from '../components/InputSearch.vue';
 
 import PublisherService from "../services/publisher.service";
 import PublisherCard from '../components/PublisherCard.vue';
+import AdminLayout from '../components/AdminLayout.vue';
+
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { push } from 'notivue';
@@ -67,38 +69,61 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="flex flex-col min-h-screen">
-        <Header></Header>
-        <section class="flex-grow mx-8 sm:mx-16 lg:mx-24 my-8">
+    <AdminLayout>
+        <div class="mb-8">
+            <h1 class="text-3xl font-black text-neutral mb-2">Quản Lý Nhà Xuất Bản</h1>
+            <p class="text-gray-500">Thông tin liên hệ các đối tác xuất bản</p>
+        </div>
 
-            <div class="flex flex-col sm:flex-row gap-2 justify-center">
-                <div class="tooltip" data-tip="Tên nhà xuất bản, địa chỉ">
-                    <InputSearch class="w-full" v-model=" searchText "></InputSearch>
-                </div>
-
-                <template v-if=" role === 'staff' ">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-2">
+        <div class="flex flex-col gap-8">
+            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-base-200">
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center w-full">
+                    <div class="tooltip tooltip-right" data-tip="Tên nhà xuất bản, địa chỉ">
+                        <InputSearch class="w-full sm:w-80" v-model=" searchText "></InputSearch>
+                    </div>
+                    <div class="flex gap-2">
                         <button class="btn btn-neutral hover:btn-info hover:text-white hover:scale-[1.01]"
-                            @click=" goToAddPublisher ">Thêm nhà xuất bản</button>
-                        <button class="btn btn-neutral hover:btn-error hover:text-white hover:scale-[1.01]"
+                            @click=" goToAddPublisher ">+ Thêm NXB</button>
+                        <button class="btn btn-outline btn-error hover:text-white hover:scale-[1.01]"
                             @click=" handleDeleteAllPublishers ">Xóa tất cả</button>
                     </div>
-                </template>
+                </div>
             </div>
 
             <template v-if=" searchFilteredPublishers.length > 0 ">
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-8 mt-8">
-                    <PublisherCard v-for=" publisher in searchFilteredPublishers " :key=" publisher._id "
-                        :publisher=" publisher "></PublisherCard>
+                <div class="overflow-x-auto bg-white rounded-[2.5rem] shadow-xl border border-base-200 mt-4">
+                    <table class="table table-zebra w-full text-neutral">
+                        <thead class="bg-base-200/50">
+                            <tr class="text-neutral uppercase text-[10px] tracking-widest border-b border-base-300">
+                                <th class="py-5 pl-8">Nhà Xuất Bản</th>
+                                <th>Địa chỉ</th>
+                                <th class="text-right pr-8">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="publisher in searchFilteredPublishers" :key="publisher._id" class="hover:bg-base-100 transition-colors group">
+                                <td class="py-4 pl-8">
+                                    <div class="font-black text-neutral uppercase tracking-tighter">{{ publisher.name }}</div>
+                                </td>
+                                <td>
+                                    <span class="text-sm italic opacity-70">{{ publisher.address }}</span>
+                                </td>
+                                <td class="text-right pr-8">
+                                    <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button @click="router.push({ name: 'publisher.edit', params: { id: publisher._id } })" 
+                                                class="btn btn-sm btn-ghost btn-info rounded-xl">Sửa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </template>
             <template v-else>
-                <div class="grid grid-cols-1 text-center mt-8">
-
-                    <p class="py-6 font-bold">Lỗi không thể tìm thấy người dùng</p>
+                <div class="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-base-200">
+                    <p class="text-xl font-bold text-gray-400">Không tìm thấy nhà xuất bản nào phù hợp</p>
                 </div>
             </template>
-        </section>
-        <Footer></Footer>
-    </div>
+        </div>
+    </AdminLayout>
 </template>

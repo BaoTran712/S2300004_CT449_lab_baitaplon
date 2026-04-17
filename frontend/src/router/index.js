@@ -8,6 +8,14 @@ const routes = [
     component: () => import("../views/Home.vue")
   },
   {
+    path: "/admin",
+    name: "admin.dashboard",
+    component: () => import("../views/AdminDashboard.vue"),
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
     path: "/user/login",
     name: "user.login",
     component: () => import("../views/UserLogin.vue")

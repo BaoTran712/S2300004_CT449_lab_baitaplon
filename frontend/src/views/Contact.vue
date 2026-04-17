@@ -64,118 +64,122 @@ const onSubmit = handleSubmit(async (values) => {
         </div>
       </section>
 
-      <div class="container mx-auto px-4 py-16">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          
-          <!-- Contact Form Card -->
-          <div class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-base-200 animate-in fade-in slide-in-from-bottom duration-700">
-            <h2 class="text-2xl font-bold text-neutral mb-8 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Gửi tin nhắn cho chúng tôi
-            </h2>
-
-            <form @submit.prevent="onSubmit" class="space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="form-control">
-                  <label class="label font-bold text-xs uppercase text-gray-400">Họ tên *</label>
-                  <input v-model="name" type="text" class="input input-bordered" placeholder="VD: Nguyễn Văn A" />
-                  <span class="text-xs text-red-500 mt-1">{{ nameError }}</span>
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative -mt-16 z-10 mb-16">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            
+            <!-- Left Side: Contact Form -->
+            <div class="lg:col-span-7 bg-white rounded-[2rem] shadow-2xl p-8 md:p-12 border border-blue-50">
+              <h2 class="text-3xl font-black text-neutral mb-8 flex items-center gap-3">
+                <span class="bg-primary/10 p-2 rounded-xl text-primary">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                </span>
+                Gửi lời nhắn cho chúng tôi
+              </h2>
+              
+              <form @submit.prevent="onSubmit" class="space-y-6">
+                <!-- Name & Email Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="form-control w-full">
+                    <label class="label"><span class="label-text font-black uppercase text-[10px] tracking-widest text-gray-400">Họ và tên</span></label>
+                    <input v-model="name" type="text" placeholder="Nguyễn Văn A" class="input input-bordered w-full rounded-xl bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+                    <span class="text-xs text-red-500 mt-1">{{ nameError }}</span>
+                  </div>
+                  <div class="form-control w-full">
+                    <label class="label"><span class="label-text font-black uppercase text-[10px] tracking-widest text-gray-400">Địa chỉ Email</span></label>
+                    <input v-model="email" type="email" placeholder="example@ctu.edu.vn" class="input input-bordered w-full rounded-xl bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+                    <span class="text-xs text-red-500 mt-1">{{ emailError }}</span>
+                  </div>
                 </div>
-                <div class="form-control">
-                  <label class="label font-bold text-xs uppercase text-gray-400">Email *</label>
-                  <input v-model="email" type="email" class="input input-bordered" placeholder="example@mail.com" />
-                  <span class="text-xs text-red-500 mt-1">{{ emailError }}</span>
-                </div>
-              </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="form-control">
-                  <label class="label font-bold text-xs uppercase text-gray-400">Số điện thoại</label>
-                  <input v-model="phone" type="text" class="input input-bordered" placeholder="0123 456 789" />
+                <div class="form-control w-full">
+                  <label class="label"><span class="label-text font-black uppercase text-[10px] tracking-widest text-gray-400">Số điện thoại</span></label>
+                  <input v-model="phone" type="text" placeholder="0123 456 789" class="input input-bordered w-full rounded-xl bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
                   <span class="text-xs text-red-500 mt-1">{{ phoneError }}</span>
                 </div>
-                <div class="form-control">
-                  <label class="label font-bold text-xs uppercase text-gray-400">Tiêu đề *</label>
-                  <input v-model="subject" type="text" class="input input-bordered" placeholder="Cần tư vấn về..." />
+
+                <div class="form-control w-full">
+                  <label class="label"><span class="label-text font-black uppercase text-[10px] tracking-widest text-gray-400">Vấn đề cần hỗ trợ</span></label>
+                  <input v-model="subject" type="text" placeholder="Mượn sách, tài khoản, đóng góp ý kiến..." class="input input-bordered w-full rounded-xl bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
                   <span class="text-xs text-red-500 mt-1">{{ subjectError }}</span>
                 </div>
-              </div>
 
-              <div class="form-control">
-                <label class="label font-bold text-xs uppercase text-gray-400">Nội dung *</label>
-                <textarea v-model="message" class="textarea textarea-bordered h-32" placeholder="Nội dung lời nhắn..."></textarea>
-                <span class="text-xs text-red-500 mt-1">{{ messageError }}</span>
-              </div>
+                <div class="form-control w-full">
+                  <label class="label"><span class="label-text font-black uppercase text-[10px] tracking-widest text-gray-400">Lời nhắn chi tiết</span></label>
+                  <textarea v-model="message" class="textarea textarea-bordered h-40 rounded-xl bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Nhập nội dung tin nhắn của bạn tại đây..."></textarea>
+                  <span class="text-xs text-red-500 mt-1">{{ messageError }}</span>
+                </div>
 
-              <button type="submit" class="btn btn-primary w-full text-white" :disabled="isSubmitting">
-                <span v-if="isSubmitting" class="loading loading-spinner"></span>
-                Gửi ngay bây giờ
-              </button>
-            </form>
-          </div>
-
-          <!-- Contact Information -->
-          <div class="flex flex-col gap-8">
-            <h2 class="text-2xl font-bold text-neutral mb-4 font-serif">Thông tin liên hệ</h2>
-            
-            <div class="space-y-6">
-              <div class="flex items-start gap-4 p-6 bg-white rounded-3xl border border-base-200 hover:shadow-lg transition-shadow">
-                <div class="bg-primary/10 p-4 rounded-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="font-bold text-lg">Địa chỉ</h3>
-                  <p class="text-gray-500">Khu II, Đ. 3/2, Xuân Khánh, Ninh Kiều, Cần Thơ</p>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-4 p-6 bg-white rounded-3xl border border-base-200 hover:shadow-lg transition-shadow">
-                <div class="bg-primary/10 p-4 rounded-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="font-bold text-lg">Điện thoại</h3>
-                  <p class="text-gray-500">0123 456 789 (Hỗ trợ 24/7)</p>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-4 p-6 bg-white rounded-3xl border border-base-200 hover:shadow-lg transition-shadow">
-                <div class="bg-primary/10 p-4 rounded-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="font-bold text-lg">Thời gian mở cửa</h3>
-                  <p class="text-gray-500">Thứ 2 - Chủ Nhật: 08:00 - 20:00</p>
-                </div>
-              </div>
+                <button type="submit" :disabled="isSubmitting" class="btn btn-primary btn-block rounded-xl text-white font-black uppercase tracking-widest shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all border-none py-4 h-auto">
+                    {{ isSubmitting ? 'Đang gửi...' : 'Gửi yêu cầu ngay' }}
+                </button>
+              </form>
             </div>
 
-            <!-- Social Media -->
-            <div class="pt-8">
-              <h3 class="font-bold text-lg mb-4">Theo dõi chúng tôi</h3>
-              <div class="flex gap-4">
-                <a href="#" class="btn btn-circle btn-outline border-base-300 hover:bg-blue-600 hover:border-blue-600">
-                  <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="#" class="btn btn-circle btn-outline border-base-300 hover:bg-pink-600 hover:border-pink-600">
-                  <i class="fab fa-instagram"></i>
-                </a>
-                <a href="#" class="btn btn-circle btn-outline border-base-300 hover:bg-black hover:border-black">
-                  <i class="fab fa-tiktok"></i>
-                </a>
+            <!-- Right Side: Consolidated Info & Social -->
+            <div class="lg:col-span-5 space-y-8 mt-12 lg:mt-0">
+              
+              <!-- Unified Contact Info Card -->
+              <div class="bg-white rounded-[2rem] shadow-xl p-10 relative overflow-hidden group border border-base-200">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 group-hover:bg-primary/10 transition-colors duration-700"></div>
+                <h2 class="text-2xl font-black mb-10 relative z-10 flex items-center gap-3 font-serif text-neutral">
+                    Thông tin liên hệ
+                    <span class="w-12 h-1 bg-primary rounded-full"></span>
+                </h2>
+                
+                <div class="space-y-10 relative z-10">
+                    <div class="flex items-start gap-6">
+                        <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0 border border-primary/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Địa chỉ văn phòng</p>
+                            <p class="text-lg font-medium leading-relaxed text-gray-700">Khu II, Đường 3/2, Quận Ninh Kiều, TP. Cần Thơ</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-6">
+                        <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0 border border-primary/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Đường dây nóng</p>
+                            <p class="text-2xl font-black tracking-tighter text-neutral">(+84) 123 456 789</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-6">
+                        <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0 border border-primary/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Giờ làm việc</p>
+                            <p class="text-lg font-medium text-gray-700">Thứ 2 - Thứ 7: 07:30 - 17:00</p>
+                        </div>
+                    </div>
+                </div>
               </div>
+
+              <!-- Social Section -->
+              <div class="bg-white rounded-[2rem] shadow-xl p-8 border border-base-200">
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-6 text-center">Theo dõi chúng tôi tại</p>
+                <div class="flex justify-center gap-6">
+                    <a href="https://facebook.com" target="_blank" class="flex flex-col items-center gap-3 group">
+                        <div class="w-16 h-16 rounded-2xl bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2] group-hover:bg-[#1877F2] group-hover:text-white transition-all duration-300 shadow-sm border border-[#1877F2]/20">
+                            <i class="fab fa-facebook-f text-2xl"></i>
+                        </div>
+                        <span class="text-xs font-black uppercase tracking-tighter text-gray-500">Facebook</span>
+                    </a>
+                    <a href="https://twitter.com" target="_blank" class="flex flex-col items-center gap-3 group">
+                        <div class="w-16 h-16 rounded-2xl bg-[#1DA1F2]/10 flex items-center justify-center text-[#1DA1F2] group-hover:bg-[#1DA1F2] group-hover:text-white transition-all duration-300 shadow-sm border border-[#1DA1F2]/20">
+                            <i class="fab fa-twitter text-2xl"></i>
+                        </div>
+                        <span class="text-xs font-black uppercase tracking-tighter text-gray-500">Twitter</span>
+                    </a>
+                </div>
+              </div>
+
             </div>
           </div>
-        </div>
       </div>
       
       <!-- Map Section -->

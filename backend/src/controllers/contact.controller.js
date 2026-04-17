@@ -42,7 +42,7 @@ export async function deleteOne(req, res, next) {
 
 export async function updateStatus(req, res, next) {
     try {
-        const document = await contactService.updateStatus(req.params.id, req.body.status);
+        const document = await contactService.updateStatus(req.params.id, req.body);
         if (!document) {
             return next(new ApiError(404, "Contact message not found"));
         }

@@ -27,17 +27,12 @@ const { handleSubmit } = useForm({
   validationSchema: borrowSchema,
 });
 
-const { value: return_date, errorMessage: return_dateError } = useField("return_date");
-
 const handleCreateBorrow = handleSubmit(async () => {
-  // debug code
-  // console.log(return_date.value);
 
   try {
     const data = {
       user_id: user_id.value,
       book_id: book_id,
-      return_date: return_date.value,
       quantity: quantity.value
     };
 
@@ -93,11 +88,12 @@ onMounted(async () => {
           <input v-model=" quantity " type="number" class="input" id="quantity" readonly value="1" />
 
           <label class="label" for="borrow_date">Ngày mượn</label>
-          <input type="date" class="input" id="borrow_date" readonly :value=" new Date().toISOString().slice( 0, 10 ) ">
+          <input type="text" class="input bg-base-100" id="borrow_date" readonly :value=" new Date().toLocaleDateString('vi-VN') ">
 
-          <label class="label" for="return_date">Ngày trả sách</label>
-          <input v-model=" return_date " type="date" class="input" id="return_date" />
-          <span class="text-red-600 text-sm">{{ return_dateError }}</span>
+          <label class="label"><span class="font-bold">Ngày trả sách (Tự động)</span></label>
+          <div class="px-4 py-2 bg-primary/10 text-primary font-bold rounded-lg border border-primary/20 text-sm">
+            Hệ thống tự động cộng 7 ngày kể từ ngày duyệt đơn.
+          </div>
 
           <button type="submit" class="btn btn-neutral mt-4 hover:scale-[1.01] text-base">Thêm phiếu mượn</button>
 

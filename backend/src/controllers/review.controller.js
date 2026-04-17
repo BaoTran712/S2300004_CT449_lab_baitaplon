@@ -37,6 +37,16 @@ export async function findByBookId(req, res, next) {
     }
 }
 
+export async function findByUserId(req, res, next) {
+    try {
+        const documents = await reviewService.findByUserId(req.params.userId);
+        return res.json(documents);
+    } catch (error) {
+        console.log(error);
+        return next(new ApiError(500, "Error while retrieving user reviews"));
+    }
+}
+
 export async function deleteOne(req, res, next) {
     try {
         const document = await reviewService.delete(req.params.id);
@@ -50,6 +60,23 @@ export async function deleteOne(req, res, next) {
     }
 }
 
+export async function updateReply(req, res, next) {
+    if (req.body?.reply === undefined) {
+        return next(new ApiError(400, "Reply content is required"));
+    }
+
+    try {
+        const document = await reviewService.updateReply(req.params.id, req.body.reply);
+        if (!document) {
+            return next(new ApiError(404, "Review not found"));
+        }
+        return res.json(document);
+    } catch (error) {
+        console.log(error);
+        return next(new ApiError(500, "Error while updating reply"));
+    }
+}
+
 export default {
-    findAll, create, findByBookId, deleteOne,
+    findAll, create, findByBookId, findByUserId, deleteOne, updateReply
 };

@@ -140,47 +140,16 @@ onUnmounted(() => {
 
         <template v-if=" role === 'staff' ">
           <li>
+            <RouterLink to="/admin" class="text-base hover:font-bold hover:underline"
+              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
+              Bảng điều khiển
+            </RouterLink>
+          </li>
+          <li>
             <RouterLink to="/books" class="text-base hover:font-bold hover:underline"
               exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
-              Danh mục sách
+              Quản lý sách
             </RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/borrowpending" class="text-base hover:font-bold hover:underline flex items-center gap-1"
-              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
-              Đơn mượn sách
-              <span v-if="pendingCount > 0" class="badge badge-error badge-sm text-white border-none font-bold shadow-sm shadow-red-500/50 animate-pulse">{{ pendingCount }}</span>
-            </RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/publishers" class="text-base hover:font-bold hover:underline"
-              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
-              Nhà xuất bản</RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/users" class="text-base hover:font-bold hover:underline"
-              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
-              Người dùng</RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/staffs" class="text-base hover:font-bold hover:underline"
-              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
-              Nhân viên</RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/staffprofile" class="text-base hover:font-bold hover:underline"
-              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
-              Thông tin nhân viên</RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/reviews" class="text-base hover:font-bold hover:underline"
-              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
-              Phản hồi</RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/contact-management" class="text-base hover:font-bold hover:underline"
-              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
-              Quản lý liên hệ</RouterLink>
           </li>
         </template>
 

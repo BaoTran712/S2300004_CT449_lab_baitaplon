@@ -3,6 +3,8 @@ import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
 import InputSearch from '../components/InputSearch.vue';
 import UserCard from '../components/UserCard.vue';
+import AdminLayout from '../components/AdminLayout.vue';
+
 
 import UserService from '../services/user.service';
 import { ref, computed, onMounted } from "vue";
@@ -67,34 +69,87 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="flex flex-col min-h-screen overflow-hidden">
-        <Header></Header>
-        <div class="flex-grow mx-8 sm:mx-16 lg:mx-24 my-8">
-            <div class="flex flex-col sm:flex-row gap-2 justify-center">
-                <div class="tooltip" data-tip="Họ lót, tên, địa chỉ, số điện thoại">
-                    <InputSearch class="w-full" v-model=" searchText "></InputSearch>
-                </div>
-                <template v-if=" role === 'staff' ">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-2 mb-8">
+    <AdminLayout>
+        <div class="mb-8">
+            <h1 class="text-3xl font-black text-neutral mb-2">Quản Lý Người Dùng</h1>
+            <p class="text-gray-500">Danh sách thành viên đăng ký trong hệ thống</p>
+        </div>
+
+        <div class="flex flex-col gap-8">
+            <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-base-200">
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center w-full">
+                    <div class="tooltip tooltip-right" data-tip="Họ lót, tên, địa chỉ, số điện thoại">
+                        <InputSearch class="w-full sm:w-80" v-model=" searchText "></InputSearch>
+                    </div>
+                    <div class="flex gap-2">
                         <button class="btn btn-neutral hover:btn-info hover:text-white hover:scale-[1.01]"
-                            @click=" goToAddUser ">Thêm người dùng</button>
-                        <button class="btn btn-neutral hover:btn-error hover:text-white hover:scale-[1.01]"
+                            @click=" goToAddUser ">+ Thêm người dùng</button>
+                        <button class="btn btn-outline btn-error hover:text-white hover:scale-[1.01]"
                             @click=" handleDeleteAllUsers ">Xóa tất cả</button>
                     </div>
-                </template>
+                </div>
             </div>
+
             <template v-if=" searchFilteredUsers.length > 0 ">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
-                    <UserCard v-for=" user in searchFilteredUsers " :key=" user._id " :user=" user "></UserCard>
+                <div class="overflow-x-auto bg-white rounded-[2.5rem] shadow-xl border border-base-200">
+                    <table class="table table-zebra w-full text-neutral">
+                        <thead class="bg-base-200/50">
+                            <tr class="text-neutral uppercase text-[10px] tracking-widest border-b border-base-300">
+                                <th class="py-5 pl-8">Thành viên</th>
+                                <th>Tài khoản</th>
+                                <th>Thông tin cá nhân</th>
+                                <th>Liên hệ</th>
+                                <th class="text-right pr-8">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="user in searchFilteredUsers" :key="user._id" class="hover:bg-base-100 transition-colors group">
+                                <td class="py-4 pl-8">
+                                    <div class="flex items-center gap-4">
+                                        <div class="avatar shadow-sm">
+                                            <div class="mask mask-squircle w-12 h-12">
+                                                <img :src="user.avatar || 'https://i.pravatar.cc/150?u=' + (user.username || 'user')" alt="Avatar" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="font-black text-neutral uppercase tracking-tighter">{{ user.last_name }} {{ user.first_name }}</div>
+                                            <div class="text-[10px] font-bold text-primary uppercase">{{ user.role }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="font-mono text-xs opacity-70">{{ user.username }}</span>
+                                </td>
+                                <td>
+                                    <div class="flex flex-col gap-0.5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="badge badge-xs" :class="user.gender ? 'badge-info' : 'badge-secondary'">{{ user.gender ? 'Nam' : 'Nữ' }}</span>
+                                            <span class="text-xs font-medium">{{ user.birthday ? new Date(user.birthday).toLocaleDateString('vi-VN') : '---' }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="flex flex-col gap-0.5 text-xs">
+                                        <span class="font-bold">{{ user.phone }}</span>
+                                        <span class="opacity-60 italic line-clamp-1 max-w-[150px]">{{ user.address }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-right pr-8">
+                                    <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button @click="router.push({ name: 'userprofile.edit', params: { id: user._id } })" 
+                                                class="btn btn-sm btn-primary btn-ghost rounded-xl">Sửa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </template>
             <template v-else>
-                <div class="grid grid-cols-1 text-center">
-
-                    <p class="py-6 font-bold">Hiện tại không thể tìm thấy người dùng</p>
+                <div class="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-base-200">
+                    <p class="text-xl font-bold text-gray-400">Hiện tại không thể tìm thấy người dùng nào</p>
                 </div>
             </template>
         </div>
-        <Footer></Footer>
-    </div>
+    </AdminLayout>
 </template>

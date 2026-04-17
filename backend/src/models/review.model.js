@@ -25,6 +25,14 @@ const reviewSchema = mongoose.Schema({
         type: String,
         trim: true,
     },
+    reply: {
+        type: String,
+        default: null,
+    },
+    repliedAt: {
+        type: Date,
+        default: null,
+    },
 },
     {
         timestamps: true,

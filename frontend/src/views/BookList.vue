@@ -3,6 +3,8 @@ import BookCard from "../components/BookCard.vue";
 import Header from "../components/Header.vue";
 import Footer from "../components/Footer.vue";
 import InputSearch from "../components/InputSearch.vue";
+import AdminLayout from "../components/AdminLayout.vue";
+
 
 import { useRouter, useRoute } from "vue-router";
 import { ref, computed, onMounted, watch } from 'vue';
@@ -167,12 +169,11 @@ watch(() => route.query.search, (newSearch) => {
 </script>
 
 <template>
+  <component :is="role === 'staff' ? AdminLayout : 'div'" :class="{ 'flex flex-col min-h-screen overflow-hidden': role !== 'staff' }">
+    
+    <Header v-if="role !== 'staff'"></Header>
 
-  <div class="flex flex-col min-h-screen overflow-hidden">
-
-    <Header></Header>
-
-    <div class="flex-grow container mx-auto px-4 sm:px-8 lg:px-16 my-8">
+    <div :class="role === 'staff' ? '' : 'flex-grow container mx-auto px-4 sm:px-8 lg:px-16 my-8'">
       <div class="flex flex-col gap-6">
         <!-- Toolbar: Search, Filter, Sort, Actions -->
         <div class="bg-base-200 p-4 rounded-xl shadow-sm border border-base-300 flex flex-col xl:flex-row gap-4 items-center justify-between">
@@ -320,10 +321,9 @@ watch(() => route.query.search, (newSearch) => {
           </div>
         </div>
       </div>
-
     </div>
 
-    <Footer></Footer>
+    <Footer v-if="role !== 'staff'"></Footer>
 
     <!-- Modal Chỉnh sửa sách -->
     <dialog class="modal" :class="{ 'modal-open': isEditModalOpen }">
@@ -354,5 +354,5 @@ watch(() => route.query.search, (newSearch) => {
        </form>
     </dialog>
 
-  </div>
+  </component>
 </template>

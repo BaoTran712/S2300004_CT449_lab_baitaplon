@@ -21,10 +21,18 @@ const contactSchema = new mongoose.Schema({
         type: String,
         required: [true, "Nội dung không được để trống"],
     },
+    response: {
+        type: String,
+        default: null,
+    },
     status: {
         type: String,
         enum: ["pending", "responded"],
         default: "pending",
+    },
+    respondedAt: {
+        type: Date,
+        default: null,
     },
     createdAt: {
         type: Date,
