@@ -1,11 +1,21 @@
 import BorrowService from "../services/borrow.service.js";
 import ApiError from "../api-error.js";
+import UserService from "../services/user.service.js";
 
 const borrowService = new BorrowService();
+const userService = new UserService();
 
 export async function create(req, res, next) {
     if (!req.body?.user_id || !req.body?.book_id || !req.body?.return_date) {
         return next(new ApiError(400, "User, book information or return date is missing"));
+    }
+
+    const user = await userService.findById(req.body.user_id);
+    if (!user) {
+        return next(new ApiError(404, "User not found"));
+    }
+    if (user.fines > 0) {
+        return next(new ApiError(403, "Người dùng chưa đóng nợ phạt phí trả trễ. Vui lòng thanh toán trước khi mượn tiếp."));
     }
 
     const existingBorrow = await borrowService.find({
@@ -73,13 +83,34 @@ export async function update(req, res, next) {
     }
 
     try {
-        const document = await borrowService.update(req.params.id, req.body);
-
-        if (!document) {
+        const existingBorrow = await borrowService.findById(req.params.id);
+        if (!existingBorrow) {
             return next(new ApiError(404, "Book borrowing record not found"));
         }
 
-        return res.json({ message: "Book borrowing record updated successfully" }, document);
+        const isMarkingAsReturned = (existingBorrow.status !== "returned" && req.body.status === "returned");
+
+        const document = await borrowService.update(req.params.id, req.body);
+
+        // Tính điểm hoặc nợ phạt khi trả sách
+        if (isMarkingAsReturned) {
+            const expectedReturnDate = new Date(existingBorrow.return_date);
+            const actualReturnDate = new Date();
+            expectedReturnDate.setHours(23, 59, 59, 999);
+
+            const user = await userService.findById(existingBorrow.user_id._id || existingBorrow.user_id);
+            if (user) {
+                if (actualReturnDate > expectedReturnDate) {
+                    // Cập nhật phạt
+                    await userService.update(user._id, { fines: (user.fines || 0) + 50000 });
+                } else {
+                    // Cập nhật điểm
+                    await userService.update(user._id, { points: (user.points || 0) + 5 });
+                }
+            }
+        }
+
+        return res.json({ message: "Book borrowing record updated successfully", document });
     } catch (error) {
         console.log(error);
         return next(new ApiError(500, `Error while updating book borrowing record with id ${req.params.id}`)

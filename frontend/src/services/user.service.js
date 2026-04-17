@@ -42,6 +42,10 @@ class UserService {
       throw error;
     }
   }
+
+  async payFines(id) {
+    return (await this.api.post(`/${id}/pay-fines`)).data;
+  }
 }
 
 export default UserService;

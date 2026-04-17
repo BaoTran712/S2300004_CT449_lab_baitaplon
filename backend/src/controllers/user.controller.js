@@ -139,6 +139,19 @@ export async function login(req, res, next) {
     }
 }
 
+export async function payFines(req, res, next) {
+    try {
+        const document = await userService.update(req.params.id, { fines: 0 });
+        if (!document) {
+            return next(new ApiError(404, "User record not found"));
+        }
+        return res.json({ message: "Fines paid successfully", document });
+    } catch (error) {
+        console.log(error);
+        return next(new ApiError(500, `Error while paying fines for user ${req.params.id}`));
+    }
+}
+
 export default {
-    create, findAll, findOne, update, deleteOne, deleteAll, login,
+    create, findAll, findOne, update, deleteOne, deleteAll, login, payFines
 };

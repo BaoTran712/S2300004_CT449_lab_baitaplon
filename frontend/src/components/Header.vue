@@ -114,6 +114,11 @@ onUnmounted(() => {
                   dùng</RouterLink>
               </li>
               <li>
+                <RouterLink to="/rewards" class="text-base text-primary/80"
+                  exact-active-class="text-base font-bold text-primary transition-all duration-200 ease-in-out">Tích điểm & Ưu đãi
+                </RouterLink>
+              </li>
+              <li>
                 <RouterLink to="/reviews" class="text-base"
                   exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">Phản hồi
                 </RouterLink>
@@ -194,6 +199,15 @@ onUnmounted(() => {
             <RouterLink to="/userprofile" class="text-base hover:font-bold hover:underline"
               exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
               Thông tin người dùng</RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/rewards" class="text-base hover:font-bold hover:underline text-primary/80 hover:text-primary flex gap-1 items-center"
+              exact-active-class="text-base font-bold text-primary transition-all duration-200 ease-in-out">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Tích điểm
+            </RouterLink>
           </li>
           <li>
             <RouterLink to="/reviews" class="text-base hover:font-bold hover:underline"

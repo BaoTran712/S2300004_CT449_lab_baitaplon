@@ -17,4 +17,6 @@ router.route("/:id")
     .get(auth, UserController.findOne)
     .delete(auth, UserController.deleteOne);
 
+router.post("/:id/pay-fines", auth, UserController.payFines);
+
 export default router;
