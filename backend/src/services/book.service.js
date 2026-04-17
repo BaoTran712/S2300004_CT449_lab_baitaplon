@@ -12,6 +12,7 @@ class BookService {
                 author: payload.author,
                 flash_sale_price: payload.flash_sale_price || null,
                 flash_sale_end_time: payload.flash_sale_end_time || null,
+                preview_chapter: payload.preview_chapter || null,
             };
             Object.keys(bookData).forEach(key => {
                 if (bookData[key] === undefined) {

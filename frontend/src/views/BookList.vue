@@ -4,13 +4,15 @@ import Header from "../components/Header.vue";
 import Footer from "../components/Footer.vue";
 import InputSearch from "../components/InputSearch.vue";
 
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { ref, computed, onMounted, watch } from 'vue';
 import BookService from '../services/book.service';
 import PublisherService from '../services/publisher.service';
 import { push } from "notivue";
+import BookForm from "../components/BookForm.vue";
 
 const router = useRouter();
+const route = useRoute();
 const bookService = new BookService();
 const publisherService = new PublisherService();
 const role = computed(() => localStorage.getItem("role"));
@@ -20,6 +22,10 @@ const publishers = ref([]);
 const searchText = ref("");
 const selectedPublisher = ref("");
 const sortKey = ref("newest");
+const viewMode = ref("list"); // 'grid' hoặc 'list'
+const isEditModalOpen = ref(false);
+const editingBook = ref(null);
+const isUpdating = ref(false);
 
 // Pagination State
 const currentPage = ref(1);
@@ -108,10 +114,56 @@ const handleDeleteAllBooks = async () => {
   }
 };
 
+const openEditModal = (book) => {
+  editingBook.value = { ...book };
+  isEditModalOpen.value = true;
+};
+
+const closeEditModal = () => {
+  isEditModalOpen.value = false;
+  editingBook.value = null;
+};
+
+const handleUpdateBook = async (payload) => {
+  isUpdating.value = true;
+  try {
+    await bookService.updateBook(editingBook.value._id, payload);
+    push.success("Cập nhật sách thành công");
+    closeEditModal();
+    fetchBooks(); // Tải lại danh sách
+  } catch (error) {
+    push.error("Lỗi khi cập nhật sách");
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
+const deleteBook = async (id) => {
+  if (confirm("Xác nhận xóa cuốn sách này?")) {
+    try {
+      await bookService.deleteBook(id);
+      push.success("Đã xóa sách");
+      fetchBooks();
+    } catch (error) {
+      push.error("Lỗi khi xóa sách");
+    }
+  }
+};
+
 onMounted(async () => {
+  if (route.query.search) {
+    searchText.value = route.query.search;
+  }
   fetchBooks();
   fetchPublishers();
 });
+
+watch(() => route.query.search, (newSearch) => {
+  if (newSearch !== undefined) {
+    searchText.value = newSearch;
+  }
+});
+
 </script>
 
 <template>
@@ -161,7 +213,6 @@ onMounted(async () => {
             </div>
           </template>
         </div>
-
         <!-- list books -->
         <div class="flex flex-col gap-8">
           <div v-if=" searchFilteredBooks.length > 0 " class="flex justify-between items-center text-sm opacity-60 italic px-2">
@@ -177,9 +228,73 @@ onMounted(async () => {
           </div>
 
           <template v-if=" paginatedBooks.length > 0 ">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
-              <BookCard v-for=" book in paginatedBooks " :key=" book._id " :book=" book "></BookCard>
+            <!-- Staff Table View -->
+            <div v-if="role === 'staff'" class="overflow-x-auto bg-white rounded-3xl shadow-xl border border-base-200">
+               <table class="table table-zebra w-full">
+                  <thead class="bg-base-200/50">
+                    <tr class="text-neutral uppercase text-[10px] tracking-widest">
+                       <th>Hình ảnh</th>
+                       <th>Thông tin sách</th>
+                       <th>Giá & Khuyến mãi</th>
+                       <th>Kho</th>
+                       <th class="text-right">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="book in paginatedBooks" :key="book._id" class="hover:bg-base-100 transition-colors group">
+                       <td>
+                          <div class="mask mask-squircle w-12 h-16">
+                             <img :src="book.image" class="object-cover w-full h-full" alt="Cover" />
+                          </div>
+                       </td>
+                       <td>
+                          <div class="flex flex-col">
+                             <span class="font-black text-neutral line-clamp-1 capitalize">{{ book.title }}</span>
+                             <span class="text-xs text-gray-400 italic">{{ book.author }}</span>
+                             <span class="text-[10px] font-bold text-primary mt-1">{{ book.publisher_id?.name }} ({{ book.published_year }})</span>
+                          </div>
+                       </td>
+                       <td>
+                          <div v-if="book.flash_sale_price" class="flex flex-col">
+                             <span class="text-xs line-through text-gray-400">{{ book.price.toLocaleString() }}đ</span>
+                             <span class="font-bold text-red-600">{{ book.flash_sale_price.toLocaleString() }}đ</span>
+                          </div>
+                          <span v-else class="font-bold">{{ book.price.toLocaleString() }}đ</span>
+                       </td>
+                       <td>
+                          <div class="badge badge-sm font-bold" :class="book.quantity > 0 ? 'badge-neutral' : 'badge-error'">
+                             {{ book.quantity }} cuốn
+                          </div>
+                       </td>
+                       <td class="text-right">
+                          <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <button @click="openEditModal(book)" class="btn btn-sm btn-info btn-ghost">Sửa</button>
+                             <button @click="deleteBook(book._id)" class="btn btn-sm btn-error btn-ghost">Xóa</button>
+                          </div>
+                       </td>
+                    </tr>
+                  </tbody>
+               </table>
             </div>
+
+            <!-- User Grid/List View -->
+            <template v-else>
+              <div class="flex justify-end gap-2 mb-4">
+                <button @click="viewMode = 'grid'" class="btn btn-sm" :class="viewMode === 'grid' ? 'btn-primary' : 'btn-ghost'">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                </button>
+                <button @click="viewMode = 'list'" class="btn btn-sm" :class="viewMode === 'list' ? 'btn-primary' : 'btn-ghost'">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+              </div>
+
+              <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+                <BookCard v-for=" book in paginatedBooks " :key=" book._id " :book=" book " viewType="grid"></BookCard>
+              </div>
+              <div v-else class="flex flex-col gap-6">
+                <BookCard v-for=" book in paginatedBooks " :key=" book._id " :book=" book " viewType="list"></BookCard>
+              </div>
+            </template>
           </template>
 
           <template v-else>
@@ -209,6 +324,35 @@ onMounted(async () => {
     </div>
 
     <Footer></Footer>
+
+    <!-- Modal Chỉnh sửa sách -->
+    <dialog class="modal" :class="{ 'modal-open': isEditModalOpen }">
+       <div class="modal-box max-w-3xl rounded-[2.5rem] p-8 md:p-12 shadow-2xl border border-base-200 bg-white">
+          <div class="flex items-center gap-4 mb-8">
+            <div class="bg-info/10 p-4 rounded-2xl">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-3xl font-black text-neutral">Cập nhật thông tin</h1>
+              <p class="text-xs text-gray-400 font-mono mt-1">Sách: {{ editingBook?.title }}</p>
+            </div>
+          </div>
+
+          <BookForm 
+            v-if="editingBook"
+            :initialData="editingBook"
+            submitLabel="Lưu các thay đổi" 
+            :loading="isUpdating"
+            @submit="handleUpdateBook" 
+            @cancel="closeEditModal" 
+          />
+       </div>
+       <form method="dialog" class="modal-backdrop">
+          <button @click="closeEditModal">close</button>
+       </form>
+    </dialog>
 
   </div>
 </template>

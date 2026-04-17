@@ -1,95 +1,44 @@
 <script setup>
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
-
-import PublisherService from '../services/publisher.service';
+import BookForm from '../components/BookForm.vue';
 import BookService from "../services/book.service";
 import { useRouter, useRoute } from 'vue-router';
 import { ref, computed, onMounted } from 'vue';
 import { push } from 'notivue';
-import { useForm, useField } from "vee-validate";
-import { bookSchema } from '../validations/book.validation';
 
 const bookService = new BookService();
-const publisherService = new PublisherService();
 const router = useRouter();
 const route = useRoute();
-const publishers = ref([]);
-const book = ref({});
-
 const book_id = route.params.id;
+const book = ref(null);
 const role = computed(() => localStorage.getItem("role"));
-
-const { handleSubmit, resetForm } = useForm({
-    validationSchema: bookSchema,
-});
-
-const { value: title, errorMessage: titleError } = useField("title");
-const { value: author, errorMessage: authorError } = useField("author");
-const { value: price, errorMessage: priceError } = useField("price");
-const { value: published_year, errorMessage: published_yearError } = useField("published_year");
-const { value: publisher_id, errorMessage: publisher_idError } = useField("publisher_id");
-const { value: quantity, errorMessage: quantityError } = useField("quantity");
-const { value: image, errorMessage: imageError } = useField("image");
-const { value: description, errorMessage: descriptionError } = useField("description");
-
-const isFlashSale = ref(false);
-const { value: flash_sale_price, errorMessage: flashSalePriceError } = useField("flash_sale_price");
-const { value: flash_sale_end_time, errorMessage: flashSaleEndTimeError } = useField("flash_sale_end_time");
+const loading = ref(false);
 
 const fetchBook = async () => {
     try {
-        const book_data = await bookService.getBook(book_id);
-        resetForm({
-            values: {
-                title: book_data.title,
-                author: book_data.author,
-                price: book_data.price,
-                published_year: book_data.published_year,
-                publisher_id: book_data.publisher_id?._id,
-                quantity: book_data.quantity,
-                image: book_data.image || "",
-                description: book_data.description || "",
-                flash_sale_price: book_data.flash_sale_price || undefined,
-                flash_sale_end_time: book_data.flash_sale_end_time ? new Date(book_data.flash_sale_end_time).toISOString().slice(0, 16) : undefined
-            }
-        });
-        if (book_data.flash_sale_price || book_data.flash_sale_end_time) {
-            isFlashSale.value = true;
-        }
+        book.value = await bookService.getBook(book_id);
     } catch (error) {
         console.log(error);
+        push.error("Không thể tải thông tin sách");
     }
 };
 
-const fetchPublishers = async () => {
+const handleUpdateBook = async (payload) => {
+    loading.value = true;
     try {
-        const publishers_data = await publisherService.getAllPublishers();
-        publishers.value = publishers_data;
-    } catch (error) {
-        console.log(error);
-    }
-};
-
-
-const handleUpdateBook = handleSubmit(async (values) => {
-    try {
-        const payload = { ...values };
-        if (!isFlashSale.value) {
-            payload.flash_sale_price = null;
-            payload.flash_sale_end_time = null;
-        }
         await bookService.updateBook(book_id, payload);
-
         push.success("Cập nhật sách thành công");
         router.push("/books");
     } catch (error) {
         console.log(error);
         push.error("Đã xảy ra lỗi khi cập nhật sách");
+    } finally {
+        loading.value = false;
     }
-});
+};
 
-const handleDeleteBook = async (book_id) => {
+const handleDeleteBook = async () => {
     try {
         if (confirm("Xác nhận xóa sách?")) {
             await bookService.deleteBook(book_id);
@@ -102,98 +51,45 @@ const handleDeleteBook = async (book_id) => {
     }
 };
 
-onMounted(async () => {
+onMounted(() => {
     if (role.value !== "staff") {
         router.push("/");
     }
     fetchBook();
-    fetchPublishers();
 });
 </script>
 
 <template>
-    <div class="flex flex-col min-h-screen">
+    <div class="flex flex-col min-h-screen bg-base-100">
         <Header></Header>
-        <div class="flex flex-grow justify-center items-center">
-            <form @submit.prevent>
-                <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4 text-base">
-                    <legend class="fieldset-legend text-xl">Cập nhật sách</legend>
-                    <label class="label" for="title">Tựa sách</label>
-                    <input v-model=" title " type="text" class="input" id="title" placeholder="Nhập tựa sách" />
-                    <span class="text-sm text-red-600">{{ titleError }}</span>
-
-                    <label class="label" for="author">Tác giả</label>
-                    <input v-model=" author " type="text" class="input" id="author" placeholder="Nhập tác giả" />
-                    <span class="text-sm text-red-600">{{ authorError }}</span>
-
-                    <label class="label" for="publisher">Nhà xuất bản</label>
-                    <select v-model=" publisher_id " class="select" id="publisher">
-                        <option disabled value="">Chọn nhà xuất bản</option>
-                        <option v-for=" publisher in publishers " :key=" publisher._id " :value=" publisher._id ">
-                            {{ publisher.name }}
-                        </option>
-                    </select>
-                    <span class="text-sm text-red-600">{{ publisher_idError }}</span>
-
-                    <label class="label" for="published_year">Năm xuất bản</label>
-                    <input v-model=" published_year " type="number" class="input" id="published_year" placeholder="Nhập năm xuất bản" />
-                    <span class="text-sm text-red-600">{{ published_yearError }}</span>
-
-                    <label class="label" for="price">Đơn giá</label>
-                    <input v-model=" price " type="number" class="input" id="price" placeholder="Nhập đơn giá" />
-                    <span class="text-sm text-red-600">{{ priceError }}</span>
-
-                    <label class="label" for="quantity">Số lượng</label>
-                    <input v-model=" quantity " type="number" class="input" id="quantity" placeholder="Nhập số lượng" />
-                    <span class="text-sm text-red-600">{{ quantityError }}</span>
-
-                    <label class="label" for="image">URL Ảnh bìa</label>
-                    <input v-model=" image " type="text" class="input" id="image" placeholder="https://example.com/cover.jpg" />
-                    <span class="text-sm text-red-600">{{ imageError }}</span>
-                    <!-- Image Preview -->
-                    <div v-if="image" class="mt-2 w-32 h-48 rounded-lg overflow-hidden border border-base-300">
-                        <img :src="image" class="w-full h-full object-cover" alt="Preview">
-                    </div>
-
-                    <label class="label" for="description">Mô tả sách</label>
-                    <textarea v-model=" description " class="textarea textarea-bordered min-h-32" id="description" placeholder="Nhập mô tả chi tiết của sách..."></textarea>
-                    <span class="text-sm text-red-600">{{ descriptionError }}</span>
-
-                    <!-- Flash sale config -->
-                    <div class="mt-4 p-4 border border-base-300 rounded-lg bg-base-100 flex flex-col gap-2">
-                        <label class="label cursor-pointer justify-start gap-4">
-                            <input type="checkbox" v-model="isFlashSale" class="toggle toggle-warning" />
-                            <span class="label-text font-bold text-warning flex items-center gap-2">
-                                ⚡ Kích hoạt Flash Sale
-                            </span>
-                        </label>
-
-                        <div v-if="isFlashSale" class="flex flex-col gap-2 transition-all">
-                            <label class="label" for="flash_sale_price">Giá Flash Sale (VNĐ)</label>
-                            <input v-model=" flash_sale_price " type="number" class="input" id="flash_sale_price" placeholder="Nhập giá ưu đãi" />
-                            <span class="text-sm text-red-600">{{ flashSalePriceError }}</span>
-
-                            <label class="label" for="flash_sale_end_time">Thời gian kết thúc</label>
-                            <input v-model=" flash_sale_end_time " type="datetime-local" class="input" id="flash_sale_end_time" />
-                            <span class="text-sm text-red-600">{{ flashSaleEndTimeError }}</span>
+        <div class="flex-grow container mx-auto px-4 py-12 flex flex-col items-center">
+            <div v-if="book" class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-base-200">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-info/10 p-4 rounded-2xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-black text-neutral">Cập nhật sách</h1>
+                            <p class="text-xs text-gray-400 font-mono mt-1">ID: {{ book_id }}</p>
                         </div>
                     </div>
+                    <button @click="handleDeleteBook" class="btn btn-error btn-outline btn-sm rounded-xl">Xóa sách</button>
+                </div>
 
-                    <div class="grid grid-cols-2 gap-2">
-                        <button @click="handleUpdateBook( book_id )"
-                            class="btn btn-neutral mt-4 hover:scale-[1.01] text-base">Cập
-                            nhật</button>
-                        <button class="btn btn-neutral mt-4 hover:scale-[1.01] text-base"
-                            @click=" handleDeleteBook( book_id )">Xóa</button>
-                    </div>
-
-                    <span class="mt-4">
-                        <strong class="hover:underline">
-                            <RouterLink to="/books" class="text-base">Quay lại</RouterLink>
-                        </strong>
-                    </span>
-                </fieldset>
-            </form>
+                <BookForm 
+                    :initialData="book"
+                    submitLabel="Lưu các thay đổi" 
+                    :loading="loading"
+                    @submit="handleUpdateBook" 
+                    @cancel="router.push('/books')" 
+                />
+            </div>
+            <div v-else class="py-20">
+                <span class="loading loading-spinner loading-lg text-primary"></span>
+            </div>
         </div>
         <Footer></Footer>
     </div>

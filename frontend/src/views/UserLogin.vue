@@ -24,6 +24,7 @@ const handleUserLogin = handleSubmit(async () => {
 
     if (response?.data?.token) {
       localStorage.setItem("authenticateToken", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user)); // Lưu cả object user
       localStorage.setItem("username", response.data.user.username);
       localStorage.setItem("id", response.data.user.id);
       localStorage.setItem("role", "user");

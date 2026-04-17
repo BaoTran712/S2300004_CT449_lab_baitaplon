@@ -91,6 +91,11 @@ onUnmounted(() => {
                   exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">Phản hồi
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink to="/contact-management" class="text-base"
+                  exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">Quản lý liên hệ
+                </RouterLink>
+              </li>
             </template>
             <template v-if=" role === 'user' ">
               <li>
@@ -111,6 +116,11 @@ onUnmounted(() => {
               <li>
                 <RouterLink to="/reviews" class="text-base"
                   exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">Phản hồi
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/contact" class="text-base"
+                  exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">Liên hệ
                 </RouterLink>
               </li>
             </template>
@@ -162,6 +172,11 @@ onUnmounted(() => {
               exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
               Phản hồi</RouterLink>
           </li>
+          <li>
+            <RouterLink to="/contact-management" class="text-base hover:font-bold hover:underline"
+              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
+              Quản lý liên hệ</RouterLink>
+          </li>
         </template>
 
         <template v-if=" role === 'user' ">
@@ -184,6 +199,11 @@ onUnmounted(() => {
             <RouterLink to="/reviews" class="text-base hover:font-bold hover:underline"
               exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
               Phản hồi</RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/contact" class="text-base hover:font-bold hover:underline"
+              exact-active-class="text-base font-bold transition-all duration-200 ease-in-out">
+              Liên hệ</RouterLink>
           </li>
         </template>
       </ul>

@@ -40,6 +40,11 @@ const bookDescriptions = [
     "Bí quyết để thành công và kiến tạo một cuộc đời đáng sống. Tác giả chia sẻ những kinh nghiệm thực tế và bài học quý giá từ những người đi trước.",
     "Tuyển tập những câu chuyện ngắn đầy triết lý, nhẹ nhàng nhưng sâu sắc, mang lại những giây phút thư giãn thực sự cho bạn đọc."
 ];
+const bookPreviews = [
+    "Ánh sáng ban mai khẽ lọt qua khe cửa, đậu trên mái tóc của người thiếu nữ đang say giấc. Đó là khởi đầu của một hành trình không hồi kết, nơi mà những giấc mơ không còn là ảo ảnh. \n\nTôi tự hỏi liệu thời gian có thể quay ngược lại, để tôi có thể sửa chữa những sai lầm của tuổi trẻ. Nhưng gió chỉ đáp lại bằng sự im lặng mênh mông của đại dương. \n\nTrong tay tôi là chiếc chìa khóa cổ xưa, thứ được cho là có thể mở ra cánh cửa dẫn vào thế giới của các chiến binh ánh sáng. Mùi gỗ mục và bụi bặm hàng thế kỷ xộc vào mũi, nhưng niềm phấn khích thì không hề giảm sút...",
+    "Vũ trụ bao la chứa đựng những bí ẩn mà trí tuệ con người mới chỉ chạm đến lớp vỏ bên ngoài. Sự dũng cảm không phải là không biết sợ, mà là đối mặt với nỗi sợ để tìm ra chân lý lịch sử. \n\nBước chân tôi vang dội trong sảnh đường cổ đại, nơi những bức tượng đá như đang dõi theo từng cử động. Mỗi ký ức hiện về như một thước phim quay chậm, tái hiện lại những trang kỹ thuật đỉnh cao của một nền văn minh đã mất. \n\nChúng ta đang đứng trước ngưỡng cửa của tương lai, nơi mà sự sáng tạo và lao động sẽ kiến tạo nên một thế giới hòa bình và phát triển bền vững.",
+    "Tình yêu là sức mạnh duy nhất có khả năng biến đổi kẻ thù thành bạn. Giữa bóng tối của sự tuyệt vọng, hy vọng vẫn bùng cháy như một ngôi sao đơn độc giữa bầu trời đêm. \n\nTôi đã đi qua những cánh rừng thiêng liêng nhất, lắng nghe lời thì thầm của lá và hơi thở của đất mẹ. Kho báu thực sự không phải là vàng bạc, mà là những khoảnh khắc bình yên trong tâm hồn. \n\nCâu chuyện này kể về một linh hồn đi tìm bản ngã giữa vòng xoáy của thời gian, nơi mỗi quyết định đều để lại dấu ấn không thể phai mờ trong dòng sông lịch sử."
+];
 
 async function seedData() {
     try {
@@ -76,6 +81,7 @@ async function seedData() {
             const randomYear = Math.floor(Math.random() * (2024 - 1990 + 1)) + 1990;
             const randomImage = bookCovers[Math.floor(Math.random() * bookCovers.length)];
             const randomDesc = bookDescriptions[Math.floor(Math.random() * bookDescriptions.length)];
+            const randomPreview = bookPreviews[Math.floor(Math.random() * bookPreviews.length)];
 
             booksBatch.push({
                 title: randomTitle,
@@ -85,7 +91,8 @@ async function seedData() {
                 quantity: randomQuantity,
                 published_year: randomYear,
                 image: randomImage,
-                description: randomDesc
+                description: randomDesc,
+                preview_chapter: randomPreview
             });
         }
 

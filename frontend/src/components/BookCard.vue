@@ -19,8 +19,13 @@ const props = defineProps({
   showInfo: {
     type: Boolean,
     default: true
+  },
+  viewType: {
+    type: String,
+    default: "grid" // 'grid' or 'list'
   }
 });
+// ... (rest of the script remains same)
 
 const title = ref("");
 const loading = ref(true);
@@ -82,8 +87,8 @@ const goToDetail = (book_id) => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full shadow rounded-lg overflow-hidden hover:shadow-lg hover:scale-[1.001] transition">
-
+  <!-- Grid Layout (Default) -->
+  <div v-if="viewType === 'grid'" class="flex flex-col h-full shadow-lg rounded-3xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 bg-white border border-base-200">
     <div class="h-64 w-full relative group overflow-hidden cursor-pointer" @click="goToDetail(props.book?._id)">
       <div v-if=" loading " class="skeleton h-full w-full object-cover"></div>
       <img alt="Book cover" @load="loading = false" :class=" { 'opacity-0': loading } "
@@ -92,22 +97,20 @@ const goToDetail = (book_id) => {
       
       <!-- Hover Overlay -->
       <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <button v-if="role !== 'staff'" @click.stop=" goToBorrowBook( props.book?._id )" class="btn btn-primary btn-sm shadow-xl">Mượn ngay</button>
-        <button v-else @click.stop="goToDetail(props.book?._id)" class="btn btn-white btn-sm shadow-xl">Xem chi tiết</button>
+        <button v-if="role !== 'staff'" @click.stop=" goToBorrowBook( props.book?._id )" class="btn btn-primary btn-sm shadow-xl rounded-full px-6">Mượn ngay</button>
+        <button v-else @click.stop="goToDetail(props.book?._id)" class="btn btn-white btn-sm shadow-xl rounded-full px-6">Xem chi tiết</button>
       </div>
 
-      <div v-if="isFlashSaleActive" class="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-bold shadow-lg flex flex-col items-center border border-red-400 backdrop-blur-sm bg-opacity-90">
-        <span class="flex items-center gap-1"><span class="animate-bounce inline-block">⚡</span> FLASH SALE</span>
-        <span class="text-[10px] font-mono mt-0.5">{{ timeLeft }}</span>
+      <div v-if="isFlashSaleActive" class="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-xl flex flex-col items-center border border-red-400 backdrop-blur-sm bg-opacity-90">
+        <span class="flex items-center gap-1">⚡ FLASH SALE</span>
+        <span class="text-[10px] font-mono">{{ timeLeft }}</span>
       </div>
     </div>
 
-    <!-- Content Section -->
-    <div class="p-4 flex flex-col flex-grow bg-white">
+    <div class="p-6 flex flex-col flex-grow bg-white">
       <template v-if=" role !== 'staff' ">
-        <!-- User View: Simplified & Modern -->
         <div class="mb-4">
-          <h3 class="text-lg font-bold text-gray-900 leading-tight mb-1 group-hover:text-primary transition-colors cursor-pointer capitalize">
+          <h3 class="text-xl font-black text-gray-900 leading-tight mb-2 hover:text-primary transition-colors cursor-pointer capitalize line-clamp-2 min-h-[3rem]">
             {{ book.title }}
           </h3>
           <p v-if="showInfo" class="text-sm text-gray-500 italic">
@@ -119,12 +122,12 @@ const goToDetail = (book_id) => {
           <div class="flex flex-col">
              <template v-if="isFlashSaleActive">
                 <span class="text-xs line-through text-gray-400">{{ `${ book.price.toLocaleString() }đ` }}</span>
-                <span class="text-lg font-extrabold text-red-600">{{ `${ book.flash_sale_price.toLocaleString() }đ` }}</span>
+                <span class="text-2xl font-black text-red-600">{{ `${ book.flash_sale_price.toLocaleString() }đ` }}</span>
              </template>
-             <span v-else class="text-lg font-bold text-gray-900">{{ `${ book.price.toLocaleString() }đ` }}</span>
+             <span v-else class="text-2xl font-black text-primary">{{ `${ book.price.toLocaleString() }đ` }}</span>
           </div>
           
-          <div class="text-[10px] font-medium px-2 py-1 rounded-full" :class="{
+          <div class="text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter" :class="{
              'bg-emerald-100 text-emerald-700': book.quantity >= 15,
              'bg-red-100 text-red-700': book.quantity < 15 && book.quantity > 0,
              'bg-gray-100 text-gray-700': book.quantity === 0
@@ -133,38 +136,86 @@ const goToDetail = (book_id) => {
           </div>
         </div>
         
-        <!-- Minimal View Call to Action -->
-        <div v-if="!showInfo" class="mt-4">
-           <button @click="goToDetail(book._id)" class="btn btn-primary btn-sm w-full">Xem chi tiết</button>
+        <div class="mt-4 flex flex-col gap-2">
+           <button @click="goToDetail(book._id)" class="btn btn-primary btn-sm w-full rounded-xl">Xem chi tiết</button>
         </div>
       </template>
 
       <template v-else>
-        <!-- Staff View: Detailed & Functional -->
-        <dl class="text-xs space-y-1 mb-4 flex-grow">
-          <div class="flex justify-between border-b border-gray-100 pb-1">
-            <dt class="font-semibold text-gray-400">Tựa sách</dt>
-            <dd class="text-right font-bold truncate max-w-[120px]">{{ book.title }}</dd>
+        <dl class="text-xs space-y-2 mb-4 flex-grow">
+          <div class="flex justify-between border-b border-gray-100 pb-2">
+            <dt class="font-semibold text-gray-400 uppercase tracking-widest text-[9px]">Tựa sách</dt>
+            <dd class="text-right font-black truncate max-w-[150px]">{{ book.title }}</dd>
           </div>
-          <div class="flex justify-between border-b border-gray-100 pb-1">
-            <dt class="font-semibold text-gray-400">Tác giả</dt>
-            <dd class="text-right truncate max-w-[120px]">{{ book.author }}</dd>
+          <div class="flex justify-between border-b border-gray-100 pb-2">
+            <dt class="font-semibold text-gray-400 uppercase tracking-widest text-[9px]">Tác giả</dt>
+            <dd class="text-right truncate max-w-[150px]">{{ book.author }}</dd>
           </div>
-          <div class="flex justify-between border-b border-gray-100 pb-1">
-            <dt class="font-semibold text-gray-400">Năm/NXB</dt>
+          <div class="flex justify-between border-b border-gray-100 pb-2">
+            <dt class="font-semibold text-gray-400 uppercase tracking-widest text-[9px]">Năm/NXB</dt>
             <dd class="text-right">{{ book.published_year }} / {{ book.publisher_id?.name || '---' }}</dd>
           </div>
-          <div class="flex justify-between font-bold pt-1">
+          <div class="flex justify-between font-black pt-2 text-primary text-sm">
             <dt>Giá</dt>
-            <dd class="text-primary">{{ book.price.toLocaleString() }}đ</dd>
+            <dd>{{ book.price.toLocaleString() }}đ</dd>
           </div>
         </dl>
 
         <div class="mt-auto flex flex-col gap-2">
-          <button @click=" goToEditBook( props.book?._id )" class="btn btn-outline btn-info btn-xs w-full">Sửa thông tin</button>
-          <button @click=" goToBorrowBook( props.book?._id )" class="btn btn-neutral btn-xs w-full" :disabled="book.quantity <= 0">Mượn sách</button>
+          <button @click=" goToEditBook( props.book?._id )" class="btn btn-outline btn-info btn-xs w-full rounded-lg">Cập nhật</button>
+          <button @click=" goToBorrowBook( props.book?._id )" class="btn btn-neutral btn-xs w-full rounded-lg" :disabled="book.quantity <= 0">Mượn sách</button>
         </div>
       </template>
+    </div>
+  </div>
+
+  <!-- List Layout (Horizontal) -->
+  <div v-else class="flex flex-col md:flex-row bg-white shadow-md rounded-2xl overflow-hidden hover:shadow-xl transition-all border border-base-200 group">
+    <!-- Image Area -->
+    <div class="w-full md:w-48 h-48 relative overflow-hidden flex-shrink-0 cursor-pointer" @click="goToDetail(book._id)">
+       <img :src="book.image || 'https://images.unsplash.com/photo-1543004218-2c4cc8ea131c?auto=format&fit=crop&q=80&w=800'" 
+            class="w-full h-full object-cover transition-transform group-hover:scale-110" alt="Book cover" />
+       <div v-if="isFlashSaleActive" class="absolute top-2 left-2 bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow-lg">⚡ FLASH</div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="p-6 flex flex-col md:flex-row flex-grow gap-6">
+       <!-- Primary Info -->
+       <div class="flex flex-col flex-grow min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+             <span class="text-[10px] uppercase font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Sách {{ book.published_year }}</span>
+             <span class="text-[10px] uppercase font-bold text-gray-500">{{ book.publisher_id?.name }}</span>
+          </div>
+          <h3 class="text-2xl font-black text-neutral line-clamp-1 group-hover:text-primary transition-colors hover:cursor-pointer" @click="goToDetail(book._id)">{{ book.title }}</h3>
+          <p class="text-gray-500 font-medium italic mt-1">{{ book.author }}</p>
+          <p class="text-sm text-gray-400 mt-2 line-clamp-2">{{ book.description }}</p>
+       </div>
+
+       <!-- Price & Inventory -->
+       <div class="flex flex-row md:flex-col justify-between items-center md:items-end min-w-[140px] border-t md:border-t-0 md:border-l border-base-200 pt-4 md:pt-0 md:pl-6">
+          <div class="flex flex-col items-center md:items-end">
+             <template v-if="isFlashSaleActive">
+                <span class="text-xs line-through text-gray-300">{{ book.price.toLocaleString() }}đ</span>
+                <span class="text-2xl font-black text-red-600">{{ book.flash_sale_price.toLocaleString() }}đ</span>
+             </template>
+             <span v-else class="text-2xl font-black text-primary">{{ book.price.toLocaleString() }}đ</span>
+          </div>
+          <div class="badge badge-sm uppercase tracking-tighter mt-2 font-bold" :class="book.quantity > 0 ? 'badge-neutral' : 'badge-error'">
+             {{ book.quantity > 0 ? `Tồn kho: ${book.quantity}` : 'Hết hàng' }}
+          </div>
+       </div>
+
+       <!-- Actions -->
+       <div class="flex flex-row md:flex-col gap-2 justify-center min-w-[120px]">
+          <template v-if="role === 'staff'">
+             <button @click="goToEditBook(book._id)" class="btn btn-outline btn-info btn-sm flex-grow rounded-xl">Chỉnh sửa</button>
+             <button @click="goToBorrowBook(book._id)" class="btn btn-neutral btn-sm flex-grow rounded-xl" :disabled="book.quantity <= 0">Mượn ngay</button>
+          </template>
+          <template v-else>
+             <button @click="goToDetail(book._id)" class="btn btn-primary btn-sm flex-grow rounded-xl px-4">Chi tiết</button>
+             <button @click="goToBorrowBook(book._id)" class="btn btn-outline btn-primary btn-sm flex-grow rounded-xl px-4" :disabled="book.quantity <= 0">Mượn sách</button>
+          </template>
+       </div>
     </div>
   </div>
 </template>

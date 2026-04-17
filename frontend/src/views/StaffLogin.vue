@@ -23,6 +23,7 @@ const handleStaffLogin = handleSubmit(async () => {
 
         if (response?.data?.token) {
             localStorage.setItem("authenticateToken", response.data.token);
+            localStorage.setItem("user", JSON.stringify(response.data.staff)); // Lưu cả object nhân viên vào key 'user' để đồng nhất
             localStorage.setItem("username", response.data.staff.username);
             localStorage.setItem("id", response.data.staff.id);
             localStorage.setItem("role", "staff");

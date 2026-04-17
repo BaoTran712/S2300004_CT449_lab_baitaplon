@@ -41,6 +41,10 @@ const bookSchema = mongoose.Schema({
         type: Date,
         default: null,
     },
+    preview_chapter: {
+        type: String,
+        default: null,
+    },
 },
     {
         timestamps: true,

@@ -17,8 +17,15 @@ const book = ref(null);
 const reviews = ref([]);
 const loading = ref(true);
 
-const user = JSON.parse(localStorage.getItem("user") || "{}");
+const user = computed(() => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "{}");
+  } catch (e) {
+    return {};
+  }
+});
 const role = computed(() => localStorage.getItem("role"));
+const isAuthenticated = computed(() => !!localStorage.getItem("authenticateToken"));
 
 const newReview = ref({
   rating: 5,
@@ -28,9 +35,16 @@ const newReview = ref({
 const fetchBookData = async () => {
   try {
     book.value = await bookService.getBook(bookId);
-    reviews.value = await reviewService.getReviewsByBookId(bookId);
+    try {
+      reviews.value = await reviewService.getReviewsByBookId(bookId);
+    } catch (reviewError) {
+      console.error("Lỗi khi tải đánh giá:", reviewError);
+      // Không redirect nếu chỉ lỗi tải đánh giá
+    }
   } catch (error) {
-    push.error("Lỗi khi tải thông tin sách");
+    console.error("Lỗi khi tải thông tin sách:", error);
+    push.error("Không thể tải thông tin sách. Vui lòng thử lại sau.");
+    // Chỉ redirect nếu thông tin chính của sách bị lỗi
     router.push({ name: "book.list" });
   } finally {
     loading.value = false;
@@ -38,15 +52,24 @@ const fetchBookData = async () => {
 };
 
 const submitReview = async () => {
+  if (!isAuthenticated.value) {
+    push.warning("Vui lòng đăng nhập để gửi đánh giá");
+    return;
+  }
   if (!newReview.value.comment.trim()) {
     push.warning("Vui lòng nhập nội dung đánh giá");
     return;
   }
   try {
+    const userId = user.value.id || user.value._id;
+    if (!userId) {
+      push.error("Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
+      return;
+    }
     const payload = {
       book_id: bookId,
-      user_id: user._id,
-      username: user.username || "Người dùng",
+      user_id: userId,
+      username: user.value.username || "Người dùng",
       rating: newReview.value.rating,
       comment: newReview.value.comment
     };
@@ -66,6 +89,11 @@ const averageRating = computed(() => {
 });
 
 const goToBorrow = () => {
+  if (!isAuthenticated.value) {
+    push.info("Vui lòng đăng nhập để mượn sách");
+    router.push({ name: "user.login" });
+    return;
+  }
   if (book.value?.quantity <= 0) {
     push.error("Sách hiện tại đã hết");
     return;
@@ -120,11 +148,15 @@ onMounted(fetchBookData);
 
             <div class="flex items-center gap-6">
                <div class="rating rating-md items-center gap-2">
-                  <div class="flex text-yellow-400">
-                     <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" :class="i <= Math.round(averageRating) ? 'fill-current' : 'fill-gray-200'" class="h-6 w-6" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  <div class="flex">
+                     <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" 
+                          :class="i <= Math.round(averageRating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 fill-gray-200'" 
+                          class="h-6 w-6" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                     </svg>
                   </div>
-                  <span class="font-bold text-lg">{{ averageRating }}</span>
-                  <span class="text-gray-400 text-sm">({{ reviews.length }} nhận xét)</span>
+                  <span class="font-black text-2xl text-base-content ml-2">{{ averageRating }}</span>
+                  <span class="text-gray-400 text-sm">/ 5 ({{ reviews.length }} nhận xét)</span>
                </div>
             </div>
 
@@ -139,9 +171,21 @@ onMounted(fetchBookData);
                   <span v-else class="text-4xl font-black text-base-content">{{ book.price.toLocaleString() }}đ</span>
                </div>
                
-               <p class="text-gray-600 leading-relaxed text-lg max-w-3xl">
-                 {{ book.description }}
-               </p>
+               <div class="flex flex-col gap-2">
+                 <h2 class="text-xl font-bold text-base-content border-l-4 border-primary pl-3">Tóm tắt & Review</h2>
+                 <p class="text-gray-600 leading-relaxed text-lg max-w-3xl italic">
+                   "{{ book.description }}"
+                 </p>
+                 <div v-if="book.preview_chapter" class="mt-2 group">
+                    <RouterLink :to="{ name: 'book.preview', params: { id: bookId } }" 
+                                target="_blank"
+                                class="inline-flex items-center gap-2 text-primary font-bold hover:underline">
+                       <span class="text-xl">📖</span> Đọc thử nội dung chương 1 
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    </RouterLink>
+                    <p class="text-[10px] text-gray-400 mt-1">Hệ thống sẽ mở trang đọc thử ở cửa sổ mới</p>
+                 </div>
+               </div>
 
                <div class="flex flex-wrap gap-4 mt-4">
                   <div class="badge badge-lg badge-outline py-4 px-6 border-base-300">
@@ -175,7 +219,7 @@ onMounted(fetchBookData);
             <div class="flex flex-col gap-6">
               <h3 class="text-xl font-bold">Để lại đánh giá của bạn</h3>
               
-              <div v-if="user._id" class="card bg-base-100 shadow-sm p-6 border border-base-300">
+              <div v-if="isAuthenticated" class="card bg-base-100 shadow-sm p-6 border border-base-300">
                 <div class="form-control gap-4">
                    <div class="flex items-center gap-4">
                       <span class="font-medium">Số sao:</span>
@@ -188,17 +232,30 @@ onMounted(fetchBookData);
                 </div>
               </div>
 
-              <div v-else class="card bg-base-100 shadow-sm p-10 border border-base-300 items-center justify-center text-center gap-4">
-                <div class="text-5xl mb-2">🔒</div>
-                <p class="text-gray-500 italic">Vui lòng đăng nhập để gửi đánh giá và chia sẻ cảm nghĩ của bạn.</p>
-                <RouterLink :to="{ name: 'user.login' }" class="btn btn-primary btn-outline px-8 rounded-xl">Đăng nhập ngay</RouterLink>
+              <div v-else class="card bg-base-100 shadow-sm p-8 border border-base-300 flex flex-col items-center justify-center text-center gap-6">
+                <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <div class="flex flex-col gap-2">
+                   <p class="text-xl font-bold">Bạn muốn chia sẻ cảm nghĩ?</p>
+                   <p class="text-gray-500 text-sm">Hãy đăng nhập để cùng thảo luận về cuốn sách này với cộng đồng nhé!</p>
+                </div>
+                <RouterLink :to="{ name: 'user.login' }" class="btn btn-primary px-10 rounded-full shadow-lg">Đăng nhập</RouterLink>
               </div>
             </div>
             
             <!-- Right: Reviews List -->
             <div class="flex flex-col gap-6 overflow-y-auto max-h-[500px] pr-4 custom-scrollbar">
-              <div v-if="reviews.length === 0" class="text-center py-10 opacity-40 italic">
-                 Chưa có nhận xét nào cho cuốn sách này. Hãy là người đầu tiên!
+              <div v-if="reviews.length === 0" class="flex flex-col items-center justify-center py-20 bg-base-100 rounded-3xl border-2 border-dashed border-base-300 gap-4">
+                 <div class="chat chat-start opacity-20 transform -rotate-6">
+                    <div class="chat-bubble font-bold text-lg">Hóng review quá...</div>
+                 </div>
+                 <div class="chat chat-end opacity-20 transform rotate-3 -mt-6">
+                    <div class="chat-bubble chat-bubble-primary font-bold">Hãy là người đầu tiên nha!</div>
+                 </div>
+                 <p class="text-gray-400 italic text-sm mt-4">Khu vực này đang chờ những ý kiến đầu tiên từ bạn</p>
               </div>
               <div v-else v-for="review in reviews" :key="review._id" class="card bg-base-100 p-6 shadow-sm border-l-4 border-l-primary mb-2">
                  <div class="flex justify-between items-center mb-4">
@@ -210,8 +267,12 @@ onMounted(fetchBookData);
                       </div>
                       <span class="font-bold">{{ review.username || "Người dùng ẩn" }}</span>
                    </div>
-                   <div class="flex text-yellow-500 scale-75">
-                      <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" :class="i <= review.rating ? 'fill-current' : 'fill-gray-200'" class="h-4 w-4" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                   <div class="flex">
+                      <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" 
+                           :class="i <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-100'" 
+                           class="h-4 w-4" viewBox="0 0 20 20">
+                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
                    </div>
                  </div>
                  <p class="text-gray-700 leading-relaxed">{{ review.comment }}</p>

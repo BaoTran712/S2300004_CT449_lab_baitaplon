@@ -51,14 +51,17 @@ const routes = [
     path: "/books",
     name: "book.list",
     component: () => import("../views/BookList.vue"),
-    meta: {
-      requiresAuth: true
-    },
   },
   {
     path: "/book/:id",
     name: "book.detail",
     component: () => import("../views/BookDetail.vue"),
+    props: true,
+  },
+  {
+    path: "/book/:id/preview",
+    name: "book.preview",
+    component: () => import("../views/BookPreview.vue"),
     props: true,
   },
   {
@@ -182,6 +185,19 @@ const routes = [
     path: "/reviews",
     name: "review.list",
     component: () => import("../views/ReviewList.vue"),
+  },
+  {
+    path: "/contact",
+    name: "contact",
+    component: () => import("../views/Contact.vue"),
+  },
+  {
+    path: "/contact-management",
+    name: "contact.management",
+    component: () => import("../views/ContactManagement.vue"),
+    meta: {
+      requiresAuth: true
+    },
   },
   {
     path: '/:pathMatch(.*)*',

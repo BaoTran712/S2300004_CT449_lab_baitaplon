@@ -1,7 +1,41 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
 @import "tailwindcss";
 @plugin "daisyui";
 
-* {
-    font-family: "Inter", sans-serif;
+:root {
+  --bg-color: #faf9f6; /* Off-white / Cream for bookish feel */
+}
+
+body {
+    font-family: "Outfit", sans-serif;
+    background-color: var(--bg-color);
+    background-image: radial-gradient(#e5e7eb 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+    color: #1a1a1a;
+    transition: background-color 0.5s ease;
+}
+
+.font-serif {
+  font-family: "Playfair Display", serif;
+}
+
+/* Custom Scrollbar for premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }

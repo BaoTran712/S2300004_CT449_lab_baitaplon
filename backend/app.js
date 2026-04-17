@@ -8,6 +8,7 @@ import publisherRouter from "./src/routes/publisher.route.js";
 import bookRouter from "./src/routes/book.route.js";
 import borrowRouter from "./src/routes/borrow.route.js";
 import reviewRouter from "./src/routes/review.route.js";
+import contactRouter from "./src/routes/contact.route.js";
 
 const app = express();
 app.use(cors());
@@ -23,6 +24,7 @@ app.use("/api/publisher", publisherRouter);
 app.use("/api/book", bookRouter);
 app.use("/api/borrow", borrowRouter);
 app.use("/api/review", reviewRouter);
+app.use("/api/contact", contactRouter);
 
 app.use((req, res, next) => {
     return next(new ApiError(404, "Resource not found"));

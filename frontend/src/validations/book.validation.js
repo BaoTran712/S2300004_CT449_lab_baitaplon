@@ -10,5 +10,6 @@ export const bookSchema = yup.object({
     flash_sale_price: yup.number().nullable().min(0, "Giá flash sale không hợp lệ").lessThan(yup.ref('price'), "Giá flash sale phải nhỏ hơn giá gốc"),
     flash_sale_end_time: yup.date().nullable().min(new Date(), "Thời gian kết thúc phải ở tương lai"),
     image: yup.string().url("URL ảnh không hợp lệ").nullable(),
-    description: yup.string().max(1000, "Mô tả tối đa 1000 ký tự").nullable()
+    description: yup.string().max(1000, "Mô tả tối đa 1000 ký tự").nullable(),
+    preview_chapter: yup.string().max(5000, "Nội dung đọc thử tối đa 5000 ký tự").nullable()
 });
